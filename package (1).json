@@ -1,0 +1,14 @@
+{
+  "name": "romniflux-pro",
+  "version": "3.0.0",
+  "description": "Professional Multithreaded GPU Video Mixer",
+  "main": "app.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "author": "Rehoteq Technologies",
+  "dependencies": {
+    "electron": "^30.0.0"
+  }
+}
