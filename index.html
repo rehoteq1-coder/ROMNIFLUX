@@ -3,106 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R.OMNIFLUX TITAN | Pro Studio</title>
+    <title>R.OMNIFLUX PRO | Production Switcher</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #050608;
-            --surface: #0f1117;
-            --accent: #00d4ff;
-            --live: #ff2d55;
-            --border: rgba(255,255,255,0.08);
-        }
-        body {
-            margin: 0; background: var(--bg); color: #fff;
-            font-family: 'Rajdhani', sans-serif; overflow: hidden;
-            display: grid; grid-template-rows: 60px 1fr 120px; height: 100vh;
-        }
-        header {
-            background: #000; border-bottom: 1px solid var(--border);
-            display: flex; align-items: center; padding: 0 25px; gap: 20px;
-        }
-        .logo { font-family: 'Orbitron'; color: var(--accent); font-weight: 700; letter-spacing: 3px; font-size: 1.2rem; }
+        :root { --bg: #050608; --surface: #0f1117; --accent: #00d4ff; --live: #ff2d55; --border: rgba(255,255,255,0.08); }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; overflow: hidden; display: grid; grid-template-rows: 50px 1fr 150px; height: 100vh; }
+        header { background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 20px; }
+        .logo { font-family: 'Orbitron'; color: var(--accent); font-weight: 700; letter-spacing: 2px; }
         
-        main {
-            display: grid; grid-template-columns: 260px 1fr 300px; gap: 1px;
-            background: var(--border);
-        }
-        .panel { background: var(--surface); position: relative; overflow: hidden; }
+        main { display: grid; grid-template-columns: 200px 1fr 200px; gap: 1px; background: var(--border); }
+        .panel { background: var(--surface); position: relative; overflow-y: auto; }
         
-        .monitor-frame {
-            background: #000; display: flex; align-items: center; justify-content: center;
-            padding: 20px;
-        }
-        #main-canvas {
-            width: 100%; height: auto; max-height: 100%;
-            aspect-ratio: 16/9; box-shadow: 0 0 100px rgba(0,0,0,0.8);
-            background: #020205;
-        }
+        /* DUAL MONITOR SYSTEM */
+        .monitor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; background: #000; align-items: center; }
+        .monitor-box { position: relative; border: 2px solid #333; aspect-ratio: 16/9; background: #050505; }
+        .monitor-box.pgm { border-color: var(--live); }
+        .monitor-box.prv { border-color: #30d158; }
+        .mon-label { position: absolute; top: 5px; left: 5px; font-size: 10px; background: rgba(0,0,0,0.8); padding: 2px 5px; font-family: 'Orbitron'; }
 
-        .btn {
-            background: #1a1d26; border: 1px solid var(--border); color: #fff;
-            padding: 12px 20px; border-radius: 4px; cursor: pointer; font-family: 'Orbitron';
-            font-size: 10px; letter-spacing: 1px; transition: 0.3s;
-        }
-        .btn:hover { border-color: var(--accent); background: rgba(0,212,255,0.1); }
-        .btn-live { background: var(--live); border: none; font-weight: bold; }
-
-        footer {
-            background: #000; border-top: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center; gap: 20px;
-        }
+        #main-canvas { width: 100%; height: 100%; background: #000; }
         
-        .stat-bar { font-family: monospace; font-size: 10px; color: var(--accent); opacity: 0.7; }
+        /* SWITCHER BAR */
+        footer { background: #000; display: flex; flex-direction: column; border-top: 1px solid var(--border); }
+        .switcher-row { display: flex; flex: 1; gap: 5px; padding: 10px; align-items: center; justify-content: center; }
+        .input-btn { width: 80px; height: 60px; background: #1a1d26; border: 1px solid #444; color: #fff; cursor: pointer; font-family: 'Orbitron'; font-size: 12px; }
+        .input-btn.active-prv { background: #30d158; color: #000; }
+        .input-btn.active-pgm { background: var(--live); color: #fff; }
+        
+        .action-btn { background: #222; border: 1px solid var(--accent); color: var(--accent); padding: 10px 20px; cursor: pointer; font-family: 'Orbitron'; font-size: 10px; }
+        .action-btn.red { border-color: var(--live); color: var(--live); }
+        
+        .btn { background: #1a1d26; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-bottom: 5px; width: 100%; }
+        input { background: #000; border: 1px solid var(--border); color: #fff; padding: 5px; width: 100%; box-sizing: border-box; margin-bottom: 5px; }
     </style>
 </head>
 <body>
-
     <header>
-        <div class="logo">R.OMNIFLUX <span style="color:#fff">TITAN</span></div>
+        <div class="logo">R.OMNIFLUX <span style="color:#fff">PRO SWITCHER</span></div>
         <div style="flex:1"></div>
-        <div class="stat-bar">ENGINE: WEBGL2 MULTITHREADED | 60FPS</div>
-        <button class="btn btn-live" onclick="Studio.addSource()">+ ACTIVATE SOURCE</button>
+        <button class="action-btn red" id="rec-btn" onclick="Studio.toggleRecord()">⏺ REC TO DISK</button>
+        <button class="action-btn" onclick="Studio.toggleStream()">◉ GO LIVE</button>
     </header>
 
     <main>
-        <!-- LEFT: SOURCES -->
+        <!-- LEFT: INPUT MANAGEMENT -->
         <div class="panel">
-            <div style="padding:15px; color: var(--accent); font-size: 11px; letter-spacing: 2px; border-bottom: 1px solid var(--border)">INPUT BUS</div>
-            <div id="source-list"></div>
+            <div style="padding:10px; font-size:12px; color:var(--accent)">INPUT HARDWARE</div>
+            <div style="padding:10px;">
+                <button class="btn" onclick="Studio.addInput(0)">+ CAM 1 (MAIN)</button>
+                <button class="btn" onclick="Studio.addInput(1)">+ CAM 2 (ALT)</button>
+                <button class="btn" onclick="Studio.addInput(2)">+ CAM 3 (DRONE)</button>
+                <button class="btn" onclick="Studio.addInput(3)">+ CAM 4 (WIDE)</button>
+            </div>
         </div>
 
-        <!-- CENTER: MONITOR -->
-        <div class="panel monitor-frame">
-            <canvas id="main-canvas"></canvas>
+        <!-- CENTER: MONITOR BUS -->
+        <div class="monitor-grid">
+            <div class="monitor-box prv">
+                <div class="mon-label" style="color:#30d158">PREVIEW</div>
+                <!-- Small preview could go here -->
+            </div>
+            <div class="monitor-box pgm">
+                <div class="mon-label" style="color:var(--live)">PROGRAM</div>
+                <canvas id="main-canvas"></canvas>
+            </div>
         </div>
 
         <!-- RIGHT: TOOLS -->
         <div class="panel">
-            <div style="padding:15px; color: var(--accent); font-size: 11px; letter-spacing: 2px; border-bottom: 1px solid var(--border)">OUTPUT TOOLS</div>
-            <div style="padding:20px; display:flex; flex-direction:column; gap:15px;">
-                <button class="btn" onclick="alert('Bible API v3 Active')">BIBLE OVERLAY</button>
-                <button class="btn" onclick="alert('Hymnal Module Ready')">HYMN LOADER</button>
-                <button class="btn" style="color:var(--live); border-color:var(--live)" onclick="alert('GFX Cleared')">CLEAR ALL</button>
+            <div style="padding:10px; font-size:12px; color:var(--accent)">WORSHIP TOOLS</div>
+            <div style="padding:10px;">
+                <input type="text" id="bible-ref" placeholder="John 3:16">
+                <button class="btn" onclick="Studio.fetchBible(document.getElementById('bible-ref').value)">GO</button>
+                <button class="btn" onclick="Studio.loadHymn()">LOAD HYMN</button>
+                <button class="btn" style="color:var(--live)" onclick="Studio.clearGfx()">CLEAR ALL</button>
+                
+                <div style="margin-top:20px; font-size:10px; color:#555">EFFECTS</div>
+                <button class="btn" onclick="Studio.toggleChroma()">CHROMA KEY: OFF</button>
+                <button class="btn" onclick="Studio.toggleMultiview()">MULTI-VIEW: OFF</button>
             </div>
         </div>
     </main>
 
     <footer>
-        <button class="btn">CHROMA KEY</button>
-        <button class="btn">MULTI-VIEW</button>
-        <button class="btn">STREAM SETTINGS</button>
-        <button class="btn">RECORD TO DISK</button>
+        <div class="switcher-row">
+            <div style="font-size:10px; color:#555; margin-right:10px;">BUS A (PGM)</div>
+            <button class="input-btn" id="pgm-0" onclick="Studio.setPGM(0)">1</button>
+            <button class="input-btn" id="pgm-1" onclick="Studio.setPGM(1)">2</button>
+            <button class="input-btn" id="pgm-2" onclick="Studio.setPGM(2)">3</button>
+            <button class="input-btn" id="pgm-3" onclick="Studio.setPGM(3)">4</button>
+            
+            <div style="width:50px;"></div>
+
+            <button class="action-btn" style="height:60px; width:100px; background:var(--accent); color:#000;" onclick="Studio.take()">CUT</button>
+            <button class="action-btn" style="height:60px; width:100px;" onclick="Studio.fade()">AUTO</button>
+            
+            <div style="width:50px;"></div>
+
+            <div style="font-size:10px; color:#555; margin-right:10px;">BUS B (PRV)</div>
+            <button class="input-btn" id="prv-0" onclick="Studio.setPRV(0)">1</button>
+            <button class="input-btn" id="prv-1" onclick="Studio.setPRV(1)">2</button>
+            <button class="input-btn" id="prv-2" onclick="Studio.setPRV(2)">3</button>
+            <button class="input-btn" id="prv-3" onclick="Studio.setPRV(3)">4</button>
+        </div>
     </footer>
 
     <script type="module">
         import './src/main.js';
         window.addEventListener('load', () => {
             const canvas = document.getElementById('main-canvas');
-            if (window.Studio) {
-                window.Studio.init(canvas);
-            }
+            if(window.Studio) window.Studio.init(canvas);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a16b55834c4293d4',t:'MTc4MzMwNjU2Mw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
