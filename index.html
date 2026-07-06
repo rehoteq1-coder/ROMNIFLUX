@@ -3,76 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R.OMNIFLUX TITAN | Elite Switcher</title>
+    <title>R.OMNIFLUX TITAN | Aero-Pro v7.1</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #020408; --surface: #0a0c14; --accent: #00d4ff; --live: #ff2d55; --prv: #30d158; --border: rgba(255,255,255,0.05); }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; overflow: hidden; display: grid; grid-template-rows: 50px 1fr 140px; height: 100vh; }
+        :root { --bg: #03050a; --surface: #0a0d18; --accent: #00d4ff; --live: #ff2d55; --prv: #30d158; --border: rgba(0,212,255,0.1); --glass: rgba(255,255,255,0.03); }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; overflow: hidden; display: grid; grid-template-rows: 50px 1fr 120px; height: 100vh; }
         
-        header { background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 20px; }
-        .logo { font-family: 'Orbitron'; color: var(--accent); font-weight: 700; letter-spacing: 2px; }
+        header { background: rgba(0,0,0,0.8); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; backdrop-filter: blur(10px); }
+        .logo { font-family: 'Orbitron'; color: var(--accent); font-weight: 700; letter-spacing: 3px; font-size: 1.1rem; }
         
-        main { display: grid; grid-template-columns: 200px 1fr; gap: 1px; background: var(--border); }
-        .panel { background: var(--surface); padding: 15px; overflow-y: auto; }
+        main { display: grid; grid-template-columns: 280px 1fr; gap: 1px; background: var(--border); }
         
-        /* THE TITAN MONITOR */
-        .monitor-container { background: #000; display: flex; align-items: center; justify-content: center; padding: 10px; position: relative; }
-        #main-canvas { width: 100%; height: auto; aspect-ratio: 16/9; background: #050505; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        
-        /* SWITCHER ENGINE UI */
-        footer { background: #000; border-top: 1px solid var(--border); display: flex; flex-direction: column; }
-        .bus-row { display: flex; gap: 5px; padding: 10px; justify-content: center; align-items: center; }
-        .btn-input { width: 70px; height: 50px; background: #1a1d26; border: 1px solid #333; color: #fff; cursor: pointer; font-family: 'Orbitron'; font-size: 14px; transition: 0.2s; }
-        
-        .btn-input.active-pgm { background: var(--live); border-color: var(--live); box-shadow: 0 0 15px rgba(255,45,85,0.4); }
-        .btn-input.active-prv { background: var(--prv); border-color: var(--prv); color: #000; }
-        
-        .take-btn { width: 120px; height: 60px; background: #222; border: 2px solid var(--accent); color: var(--accent); font-family: 'Orbitron'; cursor: pointer; font-weight: bold; }
-        .take-btn:active { background: var(--accent); color: #000; }
+        /* MODULAR SIDEBAR */
+        .sidebar { background: var(--surface); display: flex; flex-direction: column; overflow-y: auto; border-right: 1px solid var(--border); }
+        .drawer { border-bottom: 1px solid var(--border); }
+        .drawer-head { padding: 12px 15px; background: var(--glass); display: flex; justify-content: space-between; cursor: pointer; font-family: 'Orbitron'; font-size: 10px; color: var(--accent); letter-spacing: 1px; }
+        .drawer-content { padding: 15px; display: none; flex-direction: column; gap: 10px; }
+        .drawer.open .drawer-content { display: flex; }
+        .drawer.open .drawer-head { background: rgba(0,212,255,0.05); }
 
-        .btn { background: #1a1d26; border: 1px solid var(--border); color: #fff; padding: 10px; width: 100%; cursor: pointer; font-size: 11px; margin-bottom: 5px; }
-        input { background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        /* THE TITAN MONITOR */
+        .monitor-area { background: #000; display: flex; align-items: center; justify-content: center; padding: 20px; position: relative; }
+        #main-canvas { width: 100%; height: auto; aspect-ratio: 16/9; background: #010103; box-shadow: 0 0 100px rgba(0,0,0,0.8); border-radius: 4px; }
+        
+        /* PRO SWITCHER FOOTER */
+        footer { background: #000; border-top: 1px solid var(--border); display: flex; flex-direction: column; }
+        .bus-row { display: flex; flex: 1; gap: 5px; padding: 10px; justify-content: center; align-items: center; }
+        
+        .btn-input { width: 55px; height: 45px; background: #111; border: 1px solid #333; color: #fff; cursor: pointer; font-family: 'Orbitron'; font-size: 14px; border-radius: 3px; transition: 0.2s; }
+        .btn-input.active-pgm { background: var(--live); border-color: var(--live); box-shadow: 0 0 15px rgba(255,45,85,0.4); }
+        .btn-input.active-prv { background: var(--prv); border-color: var(--prv); color: #000; box-shadow: 0 0 15px rgba(48,209,88,0.3); }
+        
+        .take-btn { width: 100px; height: 60px; background: #1a1d26; border: 2px solid var(--accent); color: var(--accent); font-family: 'Orbitron'; cursor: pointer; border-radius: 5px; }
+        .take-btn:hover { background: var(--accent); color: #000; }
+
+        .btn { background: #1a1d26; border: 1px solid var(--border); color: #fff; padding: 10px; width: 100%; cursor: pointer; font-size: 11px; text-align: left; border-radius: 4px; transition: 0.2s; }
+        .btn:hover { background: rgba(0,212,255,0.15); border-color: var(--accent); }
+        
+        select, input { background: #000; border: 1px solid var(--border); color: #fff; padding: 10px; width: 100%; box-sizing: border-box; border-radius: 4px; font-size: 11px; }
+        .status-pill { padding: 4px 10px; border-radius: 20px; font-size: 9px; font-family: 'Orbitron'; background: rgba(255,255,255,0.05); color: #888; }
+        .status-pill.live { color: var(--live); background: rgba(255,45,85,0.1); border: 1px solid var(--live); }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">R.OMNIFLUX <span style="color:#fff">TITAN</span></div>
+        <div class="logo">R.OMNIFLUX <span style="font-weight:100; color:#fff">TITAN</span></div>
         <div style="flex:1"></div>
-        <button class="btn" style="width:auto; border-color:var(--live); color:var(--live)" onclick="Studio.toggleRecord()">⏺ REC TO DISK</button>
+        <div class="status-pill" id="rec-status">STANDBY</div>
+        <div style="width:10px"></div>
+        <button class="btn" style="width:auto; border-color:var(--live); color:var(--live)" onclick="Studio.toggleRecord()">⏺ REC</button>
     </header>
 
     <main>
-        <div class="panel">
-            <div style="font-size:10px; color:var(--accent); letter-spacing:1px; margin-bottom:15px;">HARDWARE INPUTS</div>
-            <button class="btn" onclick="Studio.activateInput(0)">+ CONFIGURE CAM 1</button>
-            <button class="btn" onclick="Studio.activateInput(1)">+ CONFIGURE CAM 2</button>
-            <button class="btn" onclick="Studio.activateInput(2)">+ CONFIGURE CAM 3</button>
-            <button class="btn" onclick="Studio.activateInput(3)">+ CONFIGURE CAM 4</button>
-            
-            <div style="font-size:10px; color:var(--accent); letter-spacing:1px; margin-top:25px; margin-bottom:10px;">BIBLE & OVERLAYS</div>
-            <input type="text" id="bible-ref" placeholder="John 3:16">
-            <button class="btn" onclick="Studio.fetchBible(document.getElementById('bible-ref').value)">SEND TO PGM</button>
-            <button class="btn" style="color:var(--live)" onclick="Studio.clearGfx()">CLEAR ALL</button>
+        <div class="sidebar"<!-- DRAWER: WIRELESS LINK -->
+<div class="drawer" id="d-wireless">
+    <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">SATELLITE LINK (WiFi) <span>▼</span></div>
+    <div class="drawer-content">
+        <div style="text-align:center; background:#fff; padding:10px; border-radius:5px; margin-bottom:10px;">
+            <div id="qr-code" style="color:#000; font-size:10px; font-weight:bold;">[ GENERATING QR... ]</div>
+        </div>
+        <div style="font-size:9px; color:#888; margin-bottom:10px;">Scan with iPhone/Samsung to link as Wireless Cam</div>
+        <select id="wireless-slot">
+            <option value="1">ASSIGN TO CAM 2</option>
+            <option value="2">ASSIGN TO CAM 3</option>
+            <option value="3">ASSIGN TO CAM 4</option>
+        </select>
+        <button class="btn" onclick="Studio.initWireless()">ACTIVATE LINK</button>
+    </div>
+</div>
+
+<!-- DRAWER: COLOR GRADING -->
+<div class="drawer" id="d-filters">
+    <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">IMAGE POST-FX <span>▼</span></div>
+    <div class="drawer-content">
+        <div style="font-size:10px; color:#555">BRIGHTNESS</div>
+        <input type="range" min="0" max="2" step="0.1" value="1" oninput="Studio.updateFilter('b', this.value)">
+        
+        <div style="font-size:10px; color:#555; margin-top:10px;">CONTRAST</div>
+        <input type="range" min="0" max="2" step="0.1" value="1" oninput="Studio.updateFilter('c', this.value)">
+
+        <div style="font-size:10px; color:#555; margin-top:10px;">SATURATION (VIBRANCE)</div>
+        <input type="range" min="0" max="2" step="0.1" value="1" oninput="Studio.updateFilter('s', this.value)">
+    </div>
+</div>>
+            <!-- DRAWER 1: HARDWARE -->
+            <div class="drawer open" id="d-hw">
+                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">HARDWARE ROUTING <span>▼</span></div>
+                <div class="drawer-content">
+                    <select id="device-select"><option>Detecting...</option></select>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                        <button class="btn" onclick="Studio.assignCamera(0)">SET CAM 1</button>
+                        <button class="btn" onclick="Studio.assignCamera(1)">SET CAM 2</button>
+                        <button class="btn" onclick="Studio.assignCamera(2)">SET CAM 3</button>
+                        <button class="btn" onclick="Studio.assignCamera(3)">SET CAM 4</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRAWER 2: WORSHIP TOOLS -->
+            <div class="drawer" id="d-worship">
+                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">BIBLE & HYMNAL <span>▼</span></div>
+                <div class="drawer-content">
+                    <input type="text" id="bible-ref" placeholder="John 3:16">
+                    <button class="btn" onclick="Studio.fetchBible(document.getElementById('bible-ref').value)">▶ SEND BIBLE</button>
+                    <div style="height:1px; background:var(--border); margin:5px 0;"></div>
+                    <button class="btn" onclick="Studio.loadHymn()">📄 LOAD HYMN FILE</button>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
+                        <button class="btn" style="text-align:center" onclick="Studio.prevHymnLine()">PREV</button>
+                        <button class="btn" style="text-align:center" onclick="Studio.nextHymnLine()">NEXT</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DRAWER 3: EFFECTS -->
+            <div class="drawer" id="d-fx">
+                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">PRO EFFECTS <span>▼</span></div>
+                <div class="drawer-content">
+                    <div style="font-size:10px; color:#555">CHROMA KEY COLOR</div>
+                    <input type="color" id="chroma-color" value="#00ff00" style="height:40px; padding:2px;">
+                    <button class="btn" id="chroma-btn" onclick="Studio.toggleChroma()">ENABLE KEY: OFF</button>
+                </div>
+            </div>
+
+            <!-- DRAWER 4: STREAMING -->
+            <div class="drawer" id="d-stream">
+                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">BROADCAST <span>▼</span></div>
+                <div class="drawer-content">
+                    <input type="text" placeholder="RTMP URL">
+                    <input type="password" placeholder="Stream Key">
+                    <button class="btn" style="background:var(--live); border:none;" onclick="alert('Broadcasting to Server...')">◉ GO LIVE</button>
+                </div>
+            </div>
         </div>
 
-        <div class="monitor-container">
+        <div class="monitor-area">
             <canvas id="main-canvas"></canvas>
+            <div style="position:absolute; top:30px; left:10%; color:var(--prv); font-size:11px; font-family:Orbitron; letter-spacing:2px; opacity:0.6;">PREVIEW</div>
+            <div style="position:absolute; top:30px; right:10%; color:var(--live); font-size:11px; font-family:Orbitron; letter-spacing:2px; opacity:0.6;">PROGRAM</div>
         </div>
     </main>
 
     <footer>
         <div class="bus-row">
-            <div style="font-size:10px; color:#444; margin-right:10px;">PROGRAM</div>
+            <div style="font-size:9px; color:#444; margin-right:15px; font-family:Orbitron;">PGM</div>
             <button class="btn-input" id="pgm-0" onclick="Studio.setBus('pgm', 0)">1</button>
             <button class="btn-input" id="pgm-1" onclick="Studio.setBus('pgm', 1)">2</button>
             <button class="btn-input" id="pgm-2" onclick="Studio.setBus('pgm', 2)">3</button>
             <button class="btn-input" id="pgm-3" onclick="Studio.setBus('pgm', 3)">4</button>
-
+            
             <div style="width:40px;"></div>
             <button class="take-btn" onclick="Studio.take()">CUT</button>
+            <button class="take-btn" style="width:60px; font-size:9px; border-style:dotted" onclick="Studio.take()">FADE</button>
             <div style="width:40px;"></div>
 
-            <div style="font-size:10px; color:#444; margin-right:10px;">PREVIEW</div>
+            <div style="font-size:9px; color:#444; margin-right:15px; font-family:Orbitron;">PRV</div>
             <button class="btn-input" id="prv-0" onclick="Studio.setBus('prv', 0)">1</button>
             <button class="btn-input" id="prv-1" onclick="Studio.setBus('prv', 1)">2</button>
             <button class="btn-input" id="prv-2" onclick="Studio.setBus('prv', 2)">3</button>
