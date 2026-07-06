@@ -1,6 +1,6 @@
 /** 
- * R.OMNIFLUX TITAN PRO v4.0 - MASTER SUITE
- * High-Performance GPU Compositing + Worship Tools
+ * R.OMNIFLUX TITAN PRO v4.1 - ADAPTIVE MASTER
+ * Fixes "Dark Screen" by auto-detecting camera resolution.
  */
 
 class OmniFluxStudio {
@@ -10,48 +10,33 @@ class OmniFluxStudio {
         this.gl = null;
         this.program = null;
         this.textures = new Map();
-        
-        // --- PRO GFX ENGINE ---
         this.gfx = {
             canvas: new OffscreenCanvas(1920, 1080),
             active: false,
             renderSlide: (text, sub) => {
                 const ctx = this.gfx.canvas.getContext('2d');
                 ctx.clearRect(0,0,1920,1080);
-                // Cinematic Lower Third
-                ctx.fillStyle = "rgba(0,0,0,0.7)";
-                ctx.fillRect(100, 850, 1720, 180);
-                ctx.strokeStyle = "#00d4ff";
-                ctx.lineWidth = 5;
-                ctx.strokeRect(100, 850, 1720, 180);
-                // Typography
+                ctx.fillStyle = "rgba(0,0,0,0.8)";
+                ctx.fillRect(0, 850, 1920, 230);
                 ctx.fillStyle = "white";
-                ctx.font = "bold 60px Rajdhani";
+                ctx.font = "bold 60px Arial";
                 ctx.textAlign = "center";
-                ctx.fillText(text.substring(0, 80), 960, 930);
-                ctx.font = "30px Rajdhani";
+                ctx.fillText(text.substring(0, 70), 960, 940);
                 ctx.fillStyle = "#00d4ff";
-                ctx.fillText(sub.toUpperCase(), 960, 990);
+                ctx.font = "30px Arial";
+                ctx.fillText(sub.toUpperCase(), 960, 1000);
                 this.gfx.active = true;
-                this.log("OVERLAY: " + sub);
             },
-            clear: () => {
-                this.gfx.canvas.getContext('2d').clearRect(0,0,1920,1080);
-                this.gfx.active = false;
-                this.log("Display Cleared.");
-            }
+            clear: () => { this.gfx.active = false; }
         };
-
         this.log = (msg) => {
             const el = document.getElementById('source-list');
-            if (el) el.innerHTML = `<div style="color:#00d4ff; font-size:10px; margin-bottom:4px; font-family:monospace;">> ${msg}</div>` + el.innerHTML;
+            if (el) el.innerHTML = `<div style="color:#00d4ff; font-size:10px; margin-bottom:2px;">> ${msg}</div>` + el.innerHTML;
         };
     }
 
     async init(canvas) {
         this.canvas = canvas;
-        this.canvas.width = 1280;
-        this.canvas.height = 720;
         this.gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
         
         const vs = `attribute vec2 p; attribute vec2 t; varying vec2 v; void main(){ gl_Position=vec4(p,0,1); v=t; }`;
@@ -63,36 +48,40 @@ class OmniFluxStudio {
         this.gl.useProgram(this.program);
 
         const buf = this.gl.createBuffer(); this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buf);
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,0,1, 1,-1,1,1, -1,1,0,0, -1,1,0,0, 1,-1,1,1, 1,1,1,0]), gl.STATIC_DRAW);
-        const pL = gl.getAttribLocation(this.program, 'p'); gl.enableVertexAttribArray(pL);
-        gl.vertexAttribPointer(pL, 2, gl.FLOAT, false, 16, 0);
-        const tL = gl.getAttribLocation(this.program, 't'); gl.enableVertexAttribArray(tL);
-        gl.vertexAttribPointer(tL, 2, gl.FLOAT, false, 16, 8);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([-1,-1,0,1, 1,-1,1,1, -1,1,0,0, -1,1,0,0, 1,-1,1,1, 1,1,1,0]), this.gl.STATIC_DRAW);
+        const pL = this.gl.getAttribLocation(this.program, 'p'); this.gl.enableVertexAttribArray(pL);
+        this.gl.vertexAttribPointer(pL, 2, this.gl.FLOAT, false, 16, 0);
+        const tL = this.gl.getAttribLocation(this.program, 't'); this.gl.enableVertexAttribArray(tL);
+        this.gl.vertexAttribPointer(tL, 2, this.gl.FLOAT, false, 16, 8);
 
         this.renderLoop();
-        this.log("Titan Pro Engine: READY");
+        this.log("Engine: ADAPTIVE MODE ACTIVE");
     }
 
     async addSource() {
-        this.log("Connecting Hardware...");
+        this.log("Requesting Signal...");
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: {width:1280, height:720}, audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             const video = document.createElement('video');
             video.srcObject = stream;
             video.muted = true;
-            video.play();
+            video.setAttribute('playsinline', '');
+            await video.play();
             
-            video.onloadedmetadata = () => {
-                this.sources.set('main', { video, stream });
-                this.log("BROADCAST SIGNAL LOCKED");
-            };
-        } catch (e) { this.log("Camera Permission Denied", "error"); }
+            // AUTO-ADAPT: Set canvas to match camera exactly
+            this.canvas.width = video.videoWidth;
+            this.canvas.height = video.videoHeight;
+            this.log(`Source Locked: ${video.videoWidth}x${video.videoHeight}`);
+
+            this.sources.set('main', { video, stream });
+        } catch (e) { this.log("Signal Denied."); }
     }
 
     renderLoop() {
         const gl = this.gl;
-        gl.viewport(0, 0, 1280, 720);
-        gl.clearColor(0.01, 0.01, 0.02, 1);
+        if (!gl) return;
+        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+        gl.clearColor(0, 0, 0.1, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         const src = this.sources.get('main');
@@ -104,7 +93,6 @@ class OmniFluxStudio {
             gl.texParameteri(gl.TEXTURE_2D, 10241, 9729);
             gl.uniform1i(gl.getUniformLocation(this.program, 's'), 0);
             
-            // Draw Overlays
             gl.uniform1i(gl.getUniformLocation(this.program, 'h'), this.gfx.active);
             if (this.gfx.active) {
                 if (!this.textures.has('gfx')) this.textures.set('gfx', gl.createTexture());
@@ -120,12 +108,10 @@ class OmniFluxStudio {
 
     async fetchBibleVerse(ref) {
         if(!ref) return;
-        this.log("Fetching: " + ref);
-        try {
-            const res = await fetch(`https://bible-api.com/${ref}`);
-            const data = await res.json();
-            if (data.text) this.gfx.renderSlide(data.text, data.reference);
-        } catch (e) { this.log("Bible API Error"); }
+        this.log("Searching: " + ref);
+        const res = await fetch(`https://bible-api.com/${ref}`);
+        const data = await res.json();
+        if (data.text) this.gfx.renderSlide(data.text, data.reference);
     }
 }
 window.Studio = new OmniFluxStudio();
