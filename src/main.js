@@ -1,23 +1,50 @@
 /** 
- * R.OMNIFLUX PRO v3.5 - DIAGNOSTIC & RENDER ENGINE
- * Engineered for absolute reliability.
+ * R.OMNIFLUX TITAN PRO v4.0 - MASTER SUITE
+ * High-Performance GPU Compositing + Worship Tools
  */
 
 class OmniFluxStudio {
     constructor() {
         this.sources = new Map();
         this.canvas = null;
-        this.ctx = null;
         this.gl = null;
-        this.renderMode = 'GPU'; // Will fallback to 2D if needed
-
-        this.log = (msg, type = 'info') => {
-            const el = document.getElementById('source-list');
-            if (el) {
-                const color = type === 'error' ? '#ff2d55' : '#00d4ff';
-                el.innerHTML = `<div style="color:${color}; font-size:10px; margin-bottom:5px; font-family:monospace;">[${new Date().toLocaleTimeString()}] ${msg}</div>` + el.innerHTML;
+        this.program = null;
+        this.textures = new Map();
+        
+        // --- PRO GFX ENGINE ---
+        this.gfx = {
+            canvas: new OffscreenCanvas(1920, 1080),
+            active: false,
+            renderSlide: (text, sub) => {
+                const ctx = this.gfx.canvas.getContext('2d');
+                ctx.clearRect(0,0,1920,1080);
+                // Cinematic Lower Third
+                ctx.fillStyle = "rgba(0,0,0,0.7)";
+                ctx.fillRect(100, 850, 1720, 180);
+                ctx.strokeStyle = "#00d4ff";
+                ctx.lineWidth = 5;
+                ctx.strokeRect(100, 850, 1720, 180);
+                // Typography
+                ctx.fillStyle = "white";
+                ctx.font = "bold 60px Rajdhani";
+                ctx.textAlign = "center";
+                ctx.fillText(text.substring(0, 80), 960, 930);
+                ctx.font = "30px Rajdhani";
+                ctx.fillStyle = "#00d4ff";
+                ctx.fillText(sub.toUpperCase(), 960, 990);
+                this.gfx.active = true;
+                this.log("OVERLAY: " + sub);
+            },
+            clear: () => {
+                this.gfx.canvas.getContext('2d').clearRect(0,0,1920,1080);
+                this.gfx.active = false;
+                this.log("Display Cleared.");
             }
-            console.log(`[OMNIFLUX] ${msg}`);
+        };
+
+        this.log = (msg) => {
+            const el = document.getElementById('source-list');
+            if (el) el.innerHTML = `<div style="color:#00d4ff; font-size:10px; margin-bottom:4px; font-family:monospace;">> ${msg}</div>` + el.innerHTML;
         };
     }
 
@@ -25,123 +52,80 @@ class OmniFluxStudio {
         this.canvas = canvas;
         this.canvas.width = 1280;
         this.canvas.height = 720;
-        this.log("Engine Initializing...");
-
-        // 1. Try to start GPU (WebGL2)
-        try {
-            this.gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true, antialias: true });
-            if (!this.gl) throw new Error("WebGL2 not found, trying WebGL1");
-            this.setupWebGL();
-            this.log("GPU Pipeline: READY (WebGL2)");
-        } catch (e) {
-            this.log("GPU Pipeline: FAIL. Falling back to 2D.", 'error');
-            this.renderMode = '2D';
-            this.ctx = canvas.getContext('2d');
-        }
-
-        this.startLoop();
-        document.addEventListener('click', () => this.log("User Interaction Detected"), { once: true });
-    }
-
-    setupWebGL() {
-        const gl = this.gl;
-        const vs = `attribute vec2 p; attribute vec2 t; varying vec2 v; void main(){ gl_Position=vec4(p,0,1); v=t; }`;
-        const fs = `precision highp float; uniform sampler2D s; varying vec2 v; void main(){ gl_FragColor = texture2D(s, v); }`;
+        this.gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
         
-        const vS = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vS, vs); gl.compileShader(vS);
-        const fS = gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fS, fs); gl.compileShader(fS);
-        this.program = gl.createProgram(); gl.attachShader(this.program, vS); gl.attachShader(this.program, fS); gl.linkProgram(this.program);
-        gl.useProgram(this.program);
+        const vs = `attribute vec2 p; attribute vec2 t; varying vec2 v; void main(){ gl_Position=vec4(p,0,1); v=t; }`;
+        const fs = `precision highp float; uniform sampler2D s; uniform sampler2D o; uniform bool h; varying vec2 v; void main(){ vec4 col = texture2D(s, v); if(h){ vec4 over = texture2D(o, v); col = mix(col, over, over.a); } gl_FragColor = col; }`;
+        
+        const vS = this.gl.createShader(this.gl.VERTEX_SHADER); this.gl.shaderSource(vS, vs); this.gl.compileShader(vS);
+        const fS = this.gl.createShader(this.gl.FRAGMENT_SHADER); this.gl.shaderSource(fS, fs); this.gl.compileShader(fS);
+        this.program = this.gl.createProgram(); this.gl.attachShader(this.program, vS); this.gl.attachShader(this.program, fS); this.gl.linkProgram(this.program);
+        this.gl.useProgram(this.program);
 
-        const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        const buf = this.gl.createBuffer(); this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buf);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,0,1, 1,-1,1,1, -1,1,0,0, -1,1,0,0, 1,-1,1,1, 1,1,1,0]), gl.STATIC_DRAW);
         const pL = gl.getAttribLocation(this.program, 'p'); gl.enableVertexAttribArray(pL);
         gl.vertexAttribPointer(pL, 2, gl.FLOAT, false, 16, 0);
         const tL = gl.getAttribLocation(this.program, 't'); gl.enableVertexAttribArray(tL);
         gl.vertexAttribPointer(tL, 2, gl.FLOAT, false, 16, 8);
-        this.tex = gl.createTexture();
+
+        this.renderLoop();
+        this.log("Titan Pro Engine: READY");
     }
 
     async addSource() {
-        this.log("Opening System Camera...");
+        this.log("Connecting Hardware...");
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { width: {ideal: 1280}, height: {ideal: 720} }, 
-                audio: true 
-            });
-
+            const stream = await navigator.mediaDevices.getUserMedia({ video: {width:1280, height:720}, audio: true });
             const video = document.createElement('video');
-            video.setAttribute('autoplay', '');
-            video.setAttribute('muted', '');
-            video.setAttribute('playsinline', '');
             video.srcObject = stream;
+            video.muted = true;
+            video.play();
             
-            // Critical: Wait for video to actually start
-            video.onloadedmetadata = async () => {
-                await video.play();
-                this.log(`Camera Loaded: ${video.videoWidth}x${video.videoHeight}`);
+            video.onloadedmetadata = () => {
                 this.sources.set('main', { video, stream });
+                this.log("BROADCAST SIGNAL LOCKED");
             };
-
-            video.onerror = (e) => this.log("Camera Hardware Error", "error");
-
-        } catch (e) {
-            this.log(`Permission Denied: ${e.message}`, "error");
-            alert("Please ALLOW camera access in the browser address bar.");
-        }
+        } catch (e) { this.log("Camera Permission Denied", "error"); }
     }
 
-    startLoop() {
-        const render = () => {
-            if (this.renderMode === 'GPU' && this.gl) {
-                this.renderGPU();
-            } else if (this.ctx) {
-                this.render2D();
-            }
-            requestAnimationFrame(render);
-        };
-        requestAnimationFrame(render);
-    }
-
-    renderGPU() {
+    renderLoop() {
         const gl = this.gl;
-        gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-        gl.clearColor(0.02, 0.02, 0.05, 1); // Dark Studio Blue
+        gl.viewport(0, 0, 1280, 720);
+        gl.clearColor(0.01, 0.01, 0.02, 1);
         gl.clear(gl.COLOR_BUFFER_BIT);
 
         const src = this.sources.get('main');
         if (src && src.video.readyState >= 2) {
+            if (!this.textures.has('main')) this.textures.set('main', gl.createTexture());
             gl.activeTexture(gl.TEXTURE0);
-            gl.bindTexture(gl.TEXTURE_2D, this.tex);
+            gl.bindTexture(gl.TEXTURE_2D, this.textures.get('main'));
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src.video);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, 10241, 9729);
+            gl.uniform1i(gl.getUniformLocation(this.program, 's'), 0);
+            
+            // Draw Overlays
+            gl.uniform1i(gl.getUniformLocation(this.program, 'h'), this.gfx.active);
+            if (this.gfx.active) {
+                if (!this.textures.has('gfx')) this.textures.set('gfx', gl.createTexture());
+                gl.activeTexture(gl.TEXTURE1);
+                gl.bindTexture(gl.TEXTURE_2D, this.textures.get('gfx'));
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.gfx.canvas);
+                gl.uniform1i(gl.getUniformLocation(this.program, 'o'), 1);
+            }
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
+        requestAnimationFrame(() => this.renderLoop());
     }
 
-    render2D() {
-        const src = this.sources.get('main');
-        this.ctx.fillStyle = '#020205';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-        if (src && src.video.readyState >= 2) {
-            this.ctx.drawImage(src.video, 0, 0, this.canvas.width, this.canvas.height);
-        }
-    }
-
-    // Bible Tool
     async fetchBibleVerse(ref) {
-        this.log(`Searching for: ${ref}...`);
+        if(!ref) return;
+        this.log("Fetching: " + ref);
         try {
             const res = await fetch(`https://bible-api.com/${ref}`);
             const data = await res.json();
-            if (data.text) {
-                this.log("Verse found. Displaying...");
-                alert(`BIBLE: ${data.text}`); // Temp display until GFX link
-            }
-        } catch (e) { this.log("Bible lookup failed", "error"); }
+            if (data.text) this.gfx.renderSlide(data.text, data.reference);
+        } catch (e) { this.log("Bible API Error"); }
     }
 }
-
 window.Studio = new OmniFluxStudio();
