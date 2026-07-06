@@ -3,76 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R.OMNIFLUX PRO | Church Studio</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <title>R.OMNIFLUX PRO | Sunday Rescue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #050608; --surface: #0f1117; --accent: #00d4ff; --live: #ff2d55; --border: rgba(255,255,255,0.08); }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; overflow: hidden; display: grid; grid-template-rows: 50px 1fr 200px; height: 100vh; }
-        header { background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 20px; }
-        .logo { font-family: 'Orbitron'; color: var(--accent); font-weight: 700; letter-spacing: 2px; }
-        main { display: grid; grid-template-columns: 240px 1fr 300px; gap: 1px; background: var(--border); }
-        .panel { background: var(--surface); position: relative; overflow: hidden; }
-        .monitor-container { display: flex; flex-direction: column; background: #000; justify-content: center; align-items: center; }
-        #main-canvas { width: 100%; height: auto; aspect-ratio: 16/9; background: #000; }
-        .stats { position: absolute; top: 10px; right: 10px; font-family: monospace; font-size: 10px; color: #0f0; background: rgba(0,0,0,0.7); padding: 5px; border-radius: 4px; }
-        footer { background: var(--surface); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; gap: 10px; }
-        .btn { background: #1a1d26; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; cursor: pointer; font-family: 'Orbitron'; font-size: 11px; transition: 0.2s; }
-        .btn:hover { border-color: var(--accent); background: rgba(0,212,255,0.1); }
-        .btn.live { background: var(--live); border: none; font-weight: bold; }
-        input { background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        body { margin: 0; background: #050608; color: #fff; font-family: 'Rajdhani', sans-serif; }
+        /* BLUE BORDER PROOF: If you see this, the NEW code is working */
+        #studio-wrap { border: 4px solid #00d4ff; height: 100vh; display: grid; grid-template-rows: 50px 1fr 100px; box-sizing: border-box; }
+        header { background: #000; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; border-bottom: 1px solid #333; }
+        main { display: grid; grid-template-columns: 200px 1fr 200px; gap: 2px; background: #222; }
+        .panel { background: #0f1117; padding: 10px; }
+        #main-canvas { width: 100%; aspect-ratio: 16/9; background: #000; border: 1px solid #333; }
+        .btn { background: #00d4ff; color: #000; border: none; padding: 10px 20px; font-family: 'Orbitron'; cursor: pointer; font-weight: bold; }
+        .btn-live { background: #ff2d55; color: #fff; }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">R.OMNIFLUX PRO</div>
-        <div style="flex:1"></div>
-        <button class="btn" id="rec-btn" onclick="Studio.toggleRecording()">⏺ REC TO DISK</button>
-        <button class="btn live" onclick="Studio.addSource()">+ ADD CAMERA</button>
-    </header>
-
-    <main>
-        <div class="panel">
-            <div style="padding:10px; color: var(--accent); font-size: 12px;">SOURCES</div>
-            <div id="source-list"></div>
-        </div>
-
-        <div class="panel monitor-container">
-            <canvas id="main-canvas"></canvas>
-            <div class="stats" id="perf-stats">GPU: ACTIVE | 60 FPS</div>
-        </div>
-
-        <div class="panel">
-            <div style="padding:10px; color: var(--accent); font-size: 12px; border-bottom: 1px solid var(--border)">WORSHIP TOOLS</div>
-            <div style="padding:15px; display:flex; flex-direction:column; gap:15px;">
-                <div>
-                    <div style="font-size:10px; color:#aaa; margin-bottom:5px;">BIBLE LOOKUP</div>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="bible-ref" placeholder="John 3:16">
-                        <button class="btn" onclick="Studio.fetchBibleVerse(document.getElementById('bible-ref').value)">GO</button>
-                    </div>
-                </div>
-                <div>
-                    <div style="font-size:10px; color:#aaa; margin-bottom:5px;">HYMNALS</div>
-                    <button class="btn" style="width:100%" onclick="Studio.loadHymnFile()">📄 LOAD TXT FILE</button>
-                </div>
-                <button class="btn" onclick="Studio.gfx.clear()" style="color:var(--live)">✕ CLEAR SCREEN</button>
+    <div id="studio-wrap">
+        <header>
+            <div style="font-family: 'Orbitron'; color: #00d4ff;">R.OMNIFLUX PRO v3.0</div>
+            <button class="btn btn-live" onclick="Studio.addSource()">+ ACTIVATE CAMERA</button>
+        </header>
+        <main>
+            <div class="panel">SOURCES<div id="source-list"></div></div>
+            <div class="panel" style="background:#000; display:flex; align-items:center;">
+                <canvas id="main-canvas"></canvas>
             </div>
-        </div>
-    </main>
+            <div class="panel">
+                BIBLE
+                <input type="text" id="b-ref" style="width:100%; margin-top:10px;" placeholder="John 3:16">
+                <button class="btn" style="width:100%; margin-top:5px;" onclick="Studio.fetchBibleVerse(document.getElementById('b-ref').value)">GO</button>
+            </div>
+        </main>
+        <footer style="display:flex; align-items:center; justify-content:center; background:#000;">
+            <button class="btn" onclick="Studio.gfx.clear()">CLEAR OVERLAYS</button>
+        </footer>
+    </div>
 
-    <footer>
-        <button class="btn" onclick="Studio.uploadOverlay()">🖼 LOGO OVERLAY</button>
-        <button class="btn" onclick="Studio.inviteGuest()">+ INVITE GUEST</button>
-        <button class="btn" onclick="Studio.setChromaKey(true)">🟢 GREEN SCREEN ON</button>
-        <button class="btn" onclick="Studio.setChromaKey(false)">⚪ OFF</button>
-    </footer>
-
+    <!-- REMOVED FIREBASE TO STOP THE ERRORS -->
     <script type="module">
         import './src/main.js';
         window.addEventListener('load', () => {
             const canvas = document.getElementById('main-canvas');
-            if (window.Studio) window.Studio.init(canvas);
+            if(window.Studio) window.Studio.init(canvas);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a16a11bcdb4bbc8b',t:'MTc4MzI5MzMwMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
