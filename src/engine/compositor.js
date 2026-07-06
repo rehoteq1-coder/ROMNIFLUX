@@ -1,13 +1,9 @@
-/**
- * R.OMNIFLUX TITAN GPU COMPOSITOR
- */
 let gl, canvas, program;
 let textures = new Map();
 let layers = [];
 
-self.onmessage = async (e) => {
+self.onmessage = (e) => {
     const { type, payload } = e.data;
-
     if (type === 'INIT') {
         canvas = payload.canvas;
         gl = canvas.getContext('webgl2', { antialias: false, alpha: false });
@@ -22,25 +18,19 @@ self.onmessage = async (e) => {
 
         const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,0,1, 1,-1,1,1, -1,1,0,0, -1,1,0,0, 1,-1,1,1, 1,1,1,0]), gl.STATIC_DRAW);
-        
         const pL = gl.getAttribLocation(program, 'p'); gl.enableVertexAttribArray(pL);
         gl.vertexAttribPointer(pL, 2, gl.FLOAT, false, 16, 0);
         const tL = gl.getAttribLocation(program, 't'); gl.enableVertexAttribArray(tL);
         gl.vertexAttribPointer(tL, 2, gl.FLOAT, false, 16, 8);
-
-        renderLoop();
+        render();
     }
-
     if (type === 'UPDATE_LAYERS') layers = payload;
-
     if (type === 'FRAME') {
         const { id, bitmap } = payload;
         if (!textures.has(id)) {
             const tex = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, tex);
             gl.texParameteri(gl.TEXTURE_2D, 10241, 9729);
-            gl.texParameteri(gl.TEXTURE_2D, 10242, 33071);
-            gl.texParameteri(gl.TEXTURE_2D, 10243, 33071);
             textures.set(id, tex);
         }
         gl.bindTexture(gl.TEXTURE_2D, textures.get(id));
@@ -49,10 +39,10 @@ self.onmessage = async (e) => {
     }
 };
 
-function renderLoop() {
+function render() {
     if (!gl) return;
     gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0.2, 0, 0.4, 1); // PURPLE HEARTBEAT
+    gl.clearColor(0, 0.5, 0, 1); // BRIGHT GREEN PROOF
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     for (const layer of layers) {
@@ -62,5 +52,5 @@ function renderLoop() {
             gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
     }
-    requestAnimationFrame(renderLoop);
+    requestAnimationFrame(render);
 }
