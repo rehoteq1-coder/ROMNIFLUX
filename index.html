@@ -108,12 +108,13 @@
         </div>
     </footer>
 
-    <script type="module">
-        import './src/main.js';
-        window.addEventListener('load', () => {
-            const canvas = document.getElementById('main-canvas');
-            if(window.Studio) window.Studio.init(canvas);
-        });
-    </script>
+   <script type="module">
+    import './src/main.js';
+    window.addEventListener('load', () => {
+        const pgm = document.getElementById('pgm-canvas');
+        const prv = document.getElementById('prv-canvas');
+        if(window.Studio) window.Studio.init(pgm, prv);
+    });
+</script>
 </body>
 </html>
