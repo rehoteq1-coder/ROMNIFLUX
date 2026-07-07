@@ -3,101 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>R.OMNIFLUX TITAN PRO v9.0</title>
+    <title>R.OMNIFLUX TITAN PRO v10.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #03050a; --surface: #0a0d18; --accent: #00d4ff; --live: #ff2d55; --prv: #30d158; --border: rgba(0,212,255,0.1); }
+        :root { --bg: #020408; --surface: #0a0d18; --accent: #00d4ff; --live: #ff2d55; --prv: #30d158; --border: rgba(0,212,255,0.1); }
         body { margin: 0; background: var(--bg); color: #fff; font-family: 'Rajdhani', sans-serif; overflow: hidden; display: grid; grid-template-rows: 50px 1fr 140px; height: 100vh; }
         header { background: #000; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 20px; }
         .logo { font-family: 'Orbitron'; color: var(--accent); font-weight: 700; letter-spacing: 3px; font-size: 1.1rem; }
-        main { display: grid; grid-template-columns: 300px 1fr; gap: 1px; background: var(--border); }
+        main { display: grid; grid-template-columns: 320px 1fr; gap: 1px; background: var(--border); }
         .sidebar { background: var(--surface); display: flex; flex-direction: column; overflow-y: auto; }
         .drawer { border-bottom: 1px solid var(--border); }
-        .drawer-head { padding: 12px 15px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; cursor: pointer; font-family: 'Orbitron'; font-size: 10px; color: var(--accent); }
-        .drawer-content { padding: 15px; display: none; flex-direction: column; gap: 8px; }
+        .drawer-head { padding: 12px 15px; background: rgba(255,255,255,0.03); display: flex; justify-content: space-between; cursor: pointer; font-family: 'Orbitron'; font-size: 9px; color: var(--accent); letter-spacing: 1px; }
+        .drawer-content { padding: 15px; display: none; flex-direction: column; gap: 10px; }
         .drawer.open .drawer-content { display: flex; }
-        .monitor-area { background: #000; display: flex; align-items: center; justify-content: center; position: relative; padding: 10px; }
-        #main-canvas { width: 100%; height: auto; aspect-ratio: 16/9; background: #010103; box-shadow: 0 0 100px rgba(0,0,0,0.8); }
+        .monitor-area { background: #000; display: flex; align-items: center; justify-content: center; position: relative; padding: 15px; }
+        #main-canvas { width: 100%; height: auto; aspect-ratio: 16/9; background: #010103; box-shadow: 0 0 100px rgba(0,0,0,0.9); }
         footer { background: #000; border-top: 1px solid var(--border); display: flex; flex-direction: column; }
         .bus-row { display: flex; flex: 1; gap: 5px; padding: 10px; justify-content: center; align-items: center; }
-        .btn-input { width: 55px; height: 45px; background: #111; border: 1px solid #333; color: #fff; cursor: pointer; font-family: 'Orbitron'; font-size: 14px; }
-        .btn-input.active-pgm { background: var(--live); border-color: var(--live); box-shadow: 0 0 15px rgba(255,45,85,0.4); }
+        .btn-input { width: 50px; height: 40px; background: #111; border: 1px solid #333; color: #fff; cursor: pointer; font-family: 'Orbitron'; font-size: 12px; }
+        .btn-input.active-pgm { background: var(--live); border-color: var(--live); }
         .btn-input.active-prv { background: var(--prv); color: #000; }
-        .take-btn { width: 110px; height: 60px; background: #1a1d26; border: 2px solid var(--accent); color: var(--accent); font-family: 'Orbitron'; cursor: pointer; font-weight: bold; }
+        .take-btn { width: 110px; height: 55px; background: #1a1d26; border: 2px solid var(--accent); color: var(--accent); font-family: 'Orbitron'; cursor: pointer; font-weight: bold; }
         .btn { background: #1a1d26; border: 1px solid var(--border); color: #fff; padding: 10px; width: 100%; cursor: pointer; font-size: 11px; text-align: left; }
         input, select { background: #000; border: 1px solid var(--border); color: #fff; padding: 8px; width: 100%; box-sizing: border-box; font-size: 11px; }
-        #qr-box img { width: 120px; height: 120px; margin: 0 auto; display: block; border: 4px solid #fff; border-radius: 5px; }
+        #qr-box img { width: 120px; height: 120px; margin: 0 auto; display: block; border: 4px solid #fff; }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">R.OMNIFLUX <span style="font-weight:100; color:#fff">TITAN v9</span></div>
+        <div class="logo">R.OMNIFLUX <span style="font-weight:100; color:#fff">TITAN PRO</span></div>
         <div style="flex:1"></div>
         <button class="btn" style="width:auto; border-color:var(--live); color:var(--live)" id="rec-btn" onclick="Studio.toggleRecord()">⏺ REC TO DISK</button>
     </header>
 
     <main>
         <div class="sidebar">
-            <!-- DRAWER 1: INPUTS -->
             <div class="drawer open">
                 <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">HARDWARE SOURCES <span>▼</span></div>
                 <div class="drawer-content">
-                    <button class="btn" onclick="Studio.refreshDevices()">🔄 SCAN CAMERAS</button>
-                    <select id="device-select"><option>No Cameras Detected</option></select>
+                    <button class="btn" onclick="Studio.refreshDevices()">🔄 RE-SCAN CAMERAS</button>
+                    <select id="device-select"><option>Detecting...</option></select>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-                        <button class="btn" onclick="Studio.assignCamera(0)">SET CAM 1</button>
-                        <button class="btn" onclick="Studio.assignCamera(1)">SET CAM 2</button>
-                        <button class="btn" onclick="Studio.assignCamera(2)">SET CAM 3</button>
-                        <button class="btn" onclick="Studio.assignCamera(3)">SET CAM 4</button>
+                        <button class="btn" onclick="Studio.assignCamera(0)">CAM 1</button>
+                        <button class="btn" onclick="Studio.assignCamera(1)">CAM 2</button>
+                        <button class="btn" onclick="Studio.assignCamera(2)">CAM 3</button>
+                        <button class="btn" onclick="Studio.assignCamera(3)">CAM 4</button>
                     </div>
                 </div>
             </div>
 
-            <!-- DRAWER 2: PRODUCTION DATA (TITLES) -->
             <div class="drawer">
-                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">PRODUCTION DATA <span>▼</span></div>
+                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">IMAGE POST-FX & CHROMA <span>▼</span></div>
                 <div class="drawer-content">
-                    <input type="text" id="event-title" placeholder="Event Title (e.g. Sunday Service)">
-                    <input type="text" id="speaker-name" placeholder="Speaker / Pastor Name">
-                    <button class="btn" onclick="Studio.updateEventInfo()">▶ UPDATE DISPLAY</button>
-                    <button class="btn" style="color:var(--live)" onclick="Studio.clearGfx()">✕ CLEAR ALL</button>
+                    <label style="font-size:10px; color:#555;">BRIGHTNESS</label>
+                    <input type="range" min="0" max="2" step="0.1" value="1" oninput="Studio.filters.b = this.value">
+                    <label style="font-size:10px; color:#555;">SATURATION</label>
+                    <input type="range" min="0" max="2" step="0.1" value="1" oninput="Studio.filters.s = this.value">
+                    <div style="height:1px; background:var(--border); margin:5px 0;"></div>
+                    <label style="font-size:10px; color:#555;">CHROMA KEY COLOR</label>
+                    <input type="color" id="chroma-color" value="#00ff00">
+                    <button class="btn" id="chroma-btn" onclick="Studio.toggleChroma()">CHROMA: OFF</button>
                 </div>
             </div>
 
-            <!-- DRAWER 3: WORSHIP TOOLS -->
             <div class="drawer">
                 <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">BIBLE & HYMNAL <span>▼</span></div>
                 <div class="drawer-content">
                     <input type="text" id="bible-ref" placeholder="Psalm 23:1">
-                    <button class="btn" onclick="Studio.fetchBible(document.getElementById('bible-ref').value)">▶ SEND BIBLE</button>
-                    <button class="btn" onclick="Studio.loadHymn()">📄 LOAD HYMN FILE</button>
+                    <button class="btn" onclick="Studio.fetchBible(document.getElementById('bible-ref').value)">▶ GO BIBLE</button>
+                    <button class="btn" onclick="Studio.loadHymn()">📄 LOAD HYMN</button>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
                         <button class="btn" style="text-align:center" onclick="Studio.prevHymnLine()">PREV</button>
                         <button class="btn" style="text-align:center" onclick="Studio.nextHymnLine()">NEXT</button>
                     </div>
+                    <button class="btn" style="color:var(--live)" onclick="Studio.clearGfx()">✕ CLEAR ALL</button>
                 </div>
             </div>
 
-            <!-- DRAWER 4: WIRELESS QR -->
             <div class="drawer">
-                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">SATELLITE (WIRELESS) <span>▼</span></div>
+                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">BROADCAST SETTINGS <span>▼</span></div>
                 <div class="drawer-content">
-                    <div id="qr-box" style="text-align:center;">[ GENERATING QR... ]</div>
-                    <div style="font-size:9px; color:#888; margin-top:5px; text-align:center;">Scan with smartphone to connect as Cam 2/3/4</div>
+                    <input type="text" placeholder="RTMP URL (YouTube/FB)">
+                    <input type="password" placeholder="Stream Key">
+                    <button class="btn" style="background:var(--live); border:none;" onclick="alert('Relay Active')">◉ START STREAM</button>
+                </div>
+            </div>
+
+            <div class="drawer">
+                <div class="drawer-head" onclick="this.parentElement.classList.toggle('open')">WIRELESS SATELLITE (QR) <span>▼</span></div>
+                <div class="drawer-content">
+                    <div id="qr-box"></div>
+                    <div style="font-size:9px; color:#888; text-align:center; margin-top:5px;">Link smartphones wirelessly</div>
                 </div>
             </div>
         </div>
 
         <div class="monitor-area">
             <canvas id="main-canvas"></canvas>
-            <div style="position:absolute; top:20px; left:10%; color:var(--prv); font-size:10px; font-family:Orbitron; letter-spacing:2px;">PREVIEW</div>
-            <div style="position:absolute; top:20px; right:10%; color:var(--live); font-size:10px; font-family:Orbitron; letter-spacing:2px;">PROGRAM</div>
+            <div style="position:absolute; top:20px; left:15%; color:var(--prv); font-family:Orbitron; font-size:10px;">PREVIEW</div>
+            <div style="position:absolute; top:20px; right:15%; color:var(--live); font-family:Orbitron; font-size:10px;">PROGRAM</div>
         </div>
     </main>
 
     <footer>
         <div class="bus-row">
-            <div style="font-size:10px; color:#444; margin-right:15px; font-family:Orbitron;">PGM</div>
+            <div style="font-size:10px; color:#444; margin-right:10px;">PGM</div>
             <button class="btn-input" id="pgm-0" onclick="Studio.setBus('pgm', 0)">1</button>
             <button class="btn-input" id="pgm-1" onclick="Studio.setBus('pgm', 1)">2</button>
             <button class="btn-input" id="pgm-2" onclick="Studio.setBus('pgm', 2)">3</button>
@@ -105,7 +115,7 @@
             <div style="width:40px;"></div>
             <button class="take-btn" onclick="Studio.take()">CUT</button>
             <div style="width:40px;"></div>
-            <div style="font-size:10px; color:#444; margin-right:15px; font-family:Orbitron;">PRV</div>
+            <div style="font-size:10px; color:#444; margin-right:10px;">PRV</div>
             <button class="btn-input" id="prv-0" onclick="Studio.setBus('prv', 0)">1</button>
             <button class="btn-input" id="prv-1" onclick="Studio.setBus('prv', 1)">2</button>
             <button class="btn-input" id="prv-2" onclick="Studio.setBus('prv', 2)">3</button>
